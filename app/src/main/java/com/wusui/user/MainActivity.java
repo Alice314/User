@@ -1,5 +1,6 @@
 package com.wusui.user;
 
+        import android.content.ContentValues;
         import android.database.Cursor;
         import android.database.sqlite.SQLiteDatabase;
         import android.os.Bundle;
@@ -45,33 +46,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Button button = (Button)findViewById(R.id.button);
         button.setOnClickListener(this);
-        mAdapter.notifyDataSetChanged();
+
+        try {
+            Cursor cursor = db.rawQuery("select * from user", null);
+            if (cursor.moveToFirst()) {
+                do {
+                    String content = cursor.getString(cursor.getColumnIndex("content"));
+                    mDatas.add(content);
+//                    mDatas.notify();
+                }
+                while (cursor.moveToNext());
+            }cursor.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
     protected void initData(){
         mDatas = new ArrayList<>();
+
     }
 
     @Override
     public void onClick(View v) {
 
-        insertWord(dbHelper.getWritableDatabase(),editText.getText().toString());
-        Cursor cursor = db.rawQuery("select * from user",null);
-        if (cursor.moveToFirst()){
-          do {
-              String content = cursor.getString(cursor.getColumnIndex("content"));
-              mDatas.add(content);
-          }
-          while (cursor.moveToNext());
-        }
-        cursor.close();
+    db = dbHelper.getWritableDatabase();
+//        ContentValues values = new ContentValues();
+//        values.put("content", editText.getText().toString());
+//        db.insert("user", null, values);
+//        values.clear();
+        db.execSQL("INSERT INTO User(content) VALUES(?)", new Object[]{editText.getText().toString()});
 
+
+
+        mDatas.add(editText.getText().toString());
+        mAdapter.notifyDataSetChanged();
     }
-
-    public void insertWord(SQLiteDatabase db,String content){
-        final String INSERT_WORD = "insert into user(id,content)values(null,?)";
-
-    }
-
-
 
 }
